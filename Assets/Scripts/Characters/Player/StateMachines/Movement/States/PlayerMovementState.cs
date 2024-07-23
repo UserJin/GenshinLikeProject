@@ -26,14 +26,14 @@ namespace GenshinLike
         #region IState Methods(스테이트에 종속적인 메소드)
         public virtual void Enter()
         {
-            //Debug.Log("Enter: " + GetType().Name);
+            Debug.Log("Enter: " + GetType().Name);
 
             AddInputActionsCallbacks();
         }
 
         public virtual void Exit()
         {
-            //Debug.Log("Exit: " + GetType().Name);
+            Debug.Log("Exit: " + GetType().Name);
 
             RemoveInputActionsCallbacks();
         }
@@ -45,7 +45,7 @@ namespace GenshinLike
 
         public virtual void Update()
         {
-            Debug.Log(stateMachine.ReusableData.ShouldWalk.ToString());
+            //Debug.Log(stateMachine.ReusableData.ShouldWalk.ToString());
         }
 
         public virtual void FixedUpdate()

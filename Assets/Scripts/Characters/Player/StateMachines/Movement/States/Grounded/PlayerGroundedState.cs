@@ -21,6 +21,8 @@ namespace GenshinLike
 
         protected override void RemoveInputActionsCallbacks()
         {
+            base.RemoveInputActionsCallbacks();
+
             stateMachine.Player.Input.PlayerActions.Movement.canceled -= OnMovementCanceled;
         }
 
