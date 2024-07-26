@@ -10,6 +10,9 @@ namespace GenshinLike
         public void Exit();
         public void HandleInput();
         public void Update();
-        public void FixedUpdate();
+        public void PhysicsUpdate();
+        public void OnAnimationEnterEvent();
+        public void OnAnimationExitEvent();
+        public void OnAnimationTransitionEvent();
     }
 }

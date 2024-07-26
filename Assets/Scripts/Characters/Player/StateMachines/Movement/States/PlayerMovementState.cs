@@ -33,7 +33,7 @@ namespace GenshinLike
 
         public virtual void Exit()
         {
-            Debug.Log("Exit: " + GetType().Name);
+            //Debug.Log("Exit: " + GetType().Name);
 
             RemoveInputActionsCallbacks();
         }
@@ -45,12 +45,23 @@ namespace GenshinLike
 
         public virtual void Update()
         {
-            //Debug.Log(stateMachine.ReusableData.ShouldWalk.ToString());
         }
 
-        public virtual void FixedUpdate()
+        public virtual void PhysicsUpdate()
         {
             Move();
+        }
+
+        public virtual void OnAnimationEnterEvent()
+        {
+        }
+
+        public virtual void OnAnimationExitEvent()
+        {
+        }
+
+        public virtual void OnAnimationTransitionEvent()
+        {
         }
         #endregion
 
@@ -121,7 +132,7 @@ namespace GenshinLike
 
         protected float GetMovementSpeed()
         {
-            return movemnetData.BaseSpeed * stateMachine.ReusableData.MovementSpeedModifier;
+            return movemnetData.BaseSpeed * stateMachine.ReusableData.MovementSpeedModifier * stateMachine.ReusableData.MovementOnSlopeSpeedModifier;
         }
 
         protected Vector3 GetPlayerHorizontalVelocity()
@@ -130,6 +141,11 @@ namespace GenshinLike
             playerHorizontalVelocity.y = 0;
 
             return playerHorizontalVelocity;
+        }
+
+        protected Vector3 GetPlayerVerticalVelocity()
+        {
+            return new Vector3(0f, stateMachine.Player.Rigidbody.velocity.y, 0f);
         }
          
         protected void RotateTowardsTargetRotation()
@@ -201,7 +217,6 @@ namespace GenshinLike
         {
             stateMachine.ReusableData.ShouldWalk = !stateMachine.ReusableData.ShouldWalk;
         }
-
         #endregion
     }
 }

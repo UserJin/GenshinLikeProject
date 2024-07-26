@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace GenshinLike
 {
@@ -24,6 +25,20 @@ namespace GenshinLike
         private void OnDisable()
         {
             InputActions.Disable();
+        }
+
+        public void DisableActionFor(InputAction action, float time)
+        {
+            StartCoroutine(DisableAction(action, time));
+        }
+
+        private IEnumerator DisableAction(InputAction action, float time)
+        {
+            action.Disable();
+
+            yield return new WaitForSeconds(time);
+
+            action.Enable();
         }
     }
 }

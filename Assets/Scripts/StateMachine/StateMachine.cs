@@ -33,9 +33,24 @@ namespace GenshinLike
             currentState?.Update();
         }
 
-        public void FixedUpdate()
+        public void PhysicsUpdate()
         {
-            currentState?.FixedUpdate();
+            currentState?.PhysicsUpdate();
+        }
+
+        public void OnAnimationEnterEvent()
+        {
+            currentState?.OnAnimationEnterEvent();
+        }
+
+        public void OnAnimationExitEvent()
+        {
+            currentState?.OnAnimationExitEvent();
+        }
+
+        public void OnAnimationTransitionEvent()
+        {
+            currentState?.OnAnimationTransitionEvent();
         }
     }
 
