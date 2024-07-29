@@ -20,7 +20,7 @@ namespace GenshinLike
 
         private void InitializeData()
         {
-            stateMachine.ReusableData.TimeToReachTargetRotation = movemnetData.BaseRotationData.TargetRotationReachTime;
+            SetBaseRotationData();
         }
 
         #region IState Methods(스테이트에 종속적인 메소드)
@@ -125,17 +125,17 @@ namespace GenshinLike
         #endregion
 
         #region Reusable Methods(재사용 가능 메소드)
-        protected Vector3 GetMovementInputDirection()
+        protected Vector3 GetMovementInputDirection() // 입력한 이동 방향을 가져옴
         {
             return new Vector3(stateMachine.ReusableData.MovementInput.x, 0f, stateMachine.ReusableData.MovementInput.y);
         }
 
-        protected float GetMovementSpeed()
+        protected float GetMovementSpeed() // 플레이어의 현재 속력을 가져옴 (속력 배수와 경사면 속력 배수에 의해 결정됨)
         {
             return movemnetData.BaseSpeed * stateMachine.ReusableData.MovementSpeedModifier * stateMachine.ReusableData.MovementOnSlopeSpeedModifier;
         }
 
-        protected Vector3 GetPlayerHorizontalVelocity()
+        protected Vector3 GetPlayerHorizontalVelocity() // 플레이어의 수평 속도를 가져옴
         {
             Vector3 playerHorizontalVelocity = stateMachine.Player.Rigidbody.velocity;
             playerHorizontalVelocity.y = 0;
@@ -143,7 +143,7 @@ namespace GenshinLike
             return playerHorizontalVelocity;
         }
 
-        protected Vector3 GetPlayerVerticalVelocity()
+        protected Vector3 GetPlayerVerticalVelocity() // 플레이어의 수직 속도를 가져옴
         {
             return new Vector3(0f, stateMachine.Player.Rigidbody.velocity.y, 0f);
         }
@@ -195,19 +195,42 @@ namespace GenshinLike
             return Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
         }
 
-        protected void ResetVelocity()
+        protected void ResetVelocity() // 플레이어의 속도를 0으로 초기화
         {
             stateMachine.Player.Rigidbody.velocity = Vector3.zero;
         }
 
-        protected virtual void AddInputActionsCallbacks()
+        protected virtual void AddInputActionsCallbacks() // 입력에 의한 콜백 메소드를 추가
         {
             stateMachine.Player.Input.PlayerActions.WalkToggle.started += OnWalkToggleStarted;
         }
 
-        protected virtual void RemoveInputActionsCallbacks()
+        protected virtual void RemoveInputActionsCallbacks() // 추가한 콜백 메소드를 제거
         {
             stateMachine.Player.Input.PlayerActions.WalkToggle.started -= OnWalkToggleStarted;
+        }
+
+        protected void DecelerateHorizontally() // 플레이어 감속 메소드
+        {
+            Vector3 playerHorizontalVelocity = GetPlayerHorizontalVelocity();
+
+            stateMachine.Player.Rigidbody.AddForce(-playerHorizontalVelocity * stateMachine.ReusableData.MovementDecelerationForce, ForceMode.Acceleration);
+        }
+
+        protected bool IsMovingHorizontally(float minimumMagnitude = 0.1f) // 플레이어의 수평 움직임 여부 확인 메소드
+        {
+            Vector3 playerHorizontalVelocity = GetPlayerHorizontalVelocity();
+
+            Vector2 playerHorizontalMovement = new Vector2(playerHorizontalVelocity.x, playerHorizontalVelocity.z);
+
+            return playerHorizontalMovement.magnitude > minimumMagnitude;
+        }
+
+        protected void SetBaseRotationData()
+        {
+            stateMachine.ReusableData.RotationData = movemnetData.BaseRotationData;
+
+            stateMachine.ReusableData.TimeToReachTargetRotation = stateMachine.ReusableData.RotationData.TargetRotationReachTime;
         }
 
         #endregion

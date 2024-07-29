@@ -14,6 +14,8 @@ namespace GenshinLike
 
         private int consecutiveDashesUsed;
 
+        private bool shoulKeepRotating;
+
         public PlayerDashingState(PlayerMovementStateMachine playerMovementStateMachine) : base(playerMovementStateMachine)
         {
             dashData = movemnetData.DashData;
@@ -25,20 +27,41 @@ namespace GenshinLike
 
             stateMachine.ReusableData.MovementSpeedModifier = dashData.SpeedModifier;
 
+            stateMachine.ReusableData.RotationData = dashData.RotationData;
+
             AddForceOnTransitionFromStationarySate();
+
+            shoulKeepRotating = stateMachine.ReusableData.MovementInput != Vector2.zero;
 
             UpdateConsecutiveDashes();
 
             startTime = Time.time;
         }
 
+        public override void Exit()
+        {
+            base.Exit();
+
+            SetBaseRotationData();
+        }
+
+        public override void PhysicsUpdate()
+        {
+            base.PhysicsUpdate();
+
+            if (!shoulKeepRotating) // 회전을 유지할 필요가 없다면 종료
+            {
+                return;
+            }
+
+            RotateTowardsTargetRotation();
+        }
+
         public override void OnAnimationTransitionEvent()
         {
-            base.OnAnimationTransitionEvent();
-
             if(stateMachine.ReusableData.MovementInput == Vector2.zero)
             {
-                stateMachine.ChangeState(stateMachine.IdlingState);
+                stateMachine.ChangeState(stateMachine.HardStoppingState);
 
                 return;
             }
@@ -57,7 +80,10 @@ namespace GenshinLike
             }
 
             Vector3 characterRotationDirection = stateMachine.Player.transform.forward;
+
             characterRotationDirection.y = 0;
+
+            UpdateTargetRotation(characterRotationDirection, false);
 
             stateMachine.Player.Rigidbody.velocity = characterRotationDirection * GetMovementSpeed();
         }
@@ -85,6 +111,22 @@ namespace GenshinLike
         }
         #endregion
 
+        #region Reusable Methods
+        protected override void AddInputActionsCallbacks()
+        {
+            base.AddInputActionsCallbacks();
+
+            stateMachine.Player.Input.PlayerActions.Movement.performed += OnMovementPerformed;
+        }
+
+        protected override void RemoveInputActionsCallbacks()
+        {
+            base.RemoveInputActionsCallbacks();
+
+            stateMachine.Player.Input.PlayerActions.Movement.performed -= OnMovementPerformed;
+        }
+        #endregion
+
         #region Input Methods
 
         protected override void OnMovementCanceled(InputAction.CallbackContext context)
@@ -94,7 +136,12 @@ namespace GenshinLike
 
         protected override void OnDashStarted(InputAction.CallbackContext context)
         {
-            
+
+        }
+
+        private void OnMovementPerformed(InputAction.CallbackContext context)
+        {
+            shoulKeepRotating = true;
         }
         #endregion
     }
