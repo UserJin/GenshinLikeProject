@@ -16,6 +16,13 @@ namespace GenshinLike
         }
 
         #region IState Methods
+        public override void Enter()
+        {
+            base.Enter();
+
+            UpdateShoulSprintState();
+        }
+
         public override void PhysicsUpdate()
         {
             base.PhysicsUpdate();
@@ -67,6 +74,21 @@ namespace GenshinLike
 
             return slopeSpeedModifier;
         }
+
+        private void UpdateShoulSprintState()
+        {
+            if (!stateMachine.ReusableData.ShouldSprint)
+            {
+                return;
+            }
+
+            if (stateMachine.ReusableData.MovementInput != Vector2.zero)
+            {
+                return;
+            }
+
+            stateMachine.ReusableData.ShouldSprint = false;
+        }
         #endregion
 
         #region Reusable Methods
@@ -77,6 +99,8 @@ namespace GenshinLike
             stateMachine.Player.Input.PlayerActions.Movement.canceled += OnMovementCanceled;
 
             stateMachine.Player.Input.PlayerActions.Dash.started += OnDashStarted;
+
+            stateMachine.Player.Input.PlayerActions.Jump.started += OnJumpStarted;
         }
 
         protected override void RemoveInputActionsCallbacks() // 특정 상태에서 나올 때, 입력에 대한 발생하는 메소드 삭제
@@ -86,10 +110,19 @@ namespace GenshinLike
             stateMachine.Player.Input.PlayerActions.Movement.canceled -= OnMovementCanceled;
 
             stateMachine.Player.Input.PlayerActions.Dash.started -= OnDashStarted;
+
+            stateMachine.Player.Input.PlayerActions.Jump.started -= OnJumpStarted;
         }
 
         protected virtual void OnMove()
         {
+            // 질주 도중에 점프한 경우 다시 질주상태로 진입
+            if (stateMachine.ReusableData.ShouldSprint)
+            {
+                stateMachine.ChangeState(stateMachine.SprintingState);
+
+                return;
+            }
             // 걷기 토글이 켜져있다면 걷기 상태로, 아니면 달리기 상태로 진입
             if (stateMachine.ReusableData.ShouldWalk)
             {
@@ -111,6 +144,11 @@ namespace GenshinLike
         protected virtual void OnDashStarted(InputAction.CallbackContext context)
         {
             stateMachine.ChangeState(stateMachine.DashingState);
+        }
+
+        protected virtual void OnJumpStarted(InputAction.CallbackContext context)
+        {
+            stateMachine.ChangeState(stateMachine.JumpingState);
         }
 
         #endregion

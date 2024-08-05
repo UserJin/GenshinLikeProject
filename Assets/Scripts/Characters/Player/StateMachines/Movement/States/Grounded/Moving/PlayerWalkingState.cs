@@ -17,6 +17,8 @@ namespace GenshinLike
             base.Enter();
 
             stateMachine.ReusableData.MovementSpeedModifier = movemnetData.WalkData.SpeedModifier;
+            stateMachine.ReusableData.CurrentJumpForce = airborneData.JumpData.WeakForce;
+
         }
         #endregion
 

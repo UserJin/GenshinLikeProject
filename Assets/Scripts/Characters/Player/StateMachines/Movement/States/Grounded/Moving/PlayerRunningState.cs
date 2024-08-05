@@ -20,6 +20,7 @@ namespace GenshinLike
             base.Enter();
 
             stateMachine.ReusableData.MovementSpeedModifier = movemnetData.RunData.SpeedModifier;
+            stateMachine.ReusableData.CurrentJumpForce = airborneData.JumpData.MediumForce;
 
             startTime = Time.time;
         }

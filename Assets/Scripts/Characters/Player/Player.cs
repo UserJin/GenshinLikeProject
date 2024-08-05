@@ -46,6 +46,11 @@ namespace GenshinLike
             movementStateMachine.ChangeState(movementStateMachine.IdlingState);
         }
 
+        private void OnTriggerEnter(Collider collider)
+        {
+            movementStateMachine.OnTriggerEnter(collider);
+        }
+
         private void Update()
         {
             movementStateMachine.HandleInput();

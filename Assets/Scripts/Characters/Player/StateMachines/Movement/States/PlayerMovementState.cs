@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -8,12 +9,14 @@ namespace GenshinLike
         protected PlayerMovementStateMachine stateMachine;
 
         protected PlayerGroundedData movemnetData;
+        protected PlayerAirborneData airborneData;
 
         public PlayerMovementState(PlayerMovementStateMachine playerMovementStateMachine)
         {
             stateMachine = playerMovementStateMachine;
 
             movemnetData = stateMachine.Player.Data.GroundedData;
+            airborneData = stateMachine.Player.Data.AirborneData;
 
             InitializeData();
         }
@@ -62,6 +65,16 @@ namespace GenshinLike
 
         public virtual void OnAnimationTransitionEvent()
         {
+        }
+
+        public virtual void OnTriggerEnter(Collider collider)
+        {
+            if(stateMachine.Player.LayerData.IsGroundLayer(collider.gameObject.layer))
+            {
+                OnContactWithGround(collider);
+
+                return;
+            }
         }
         #endregion
 
@@ -210,11 +223,18 @@ namespace GenshinLike
             stateMachine.Player.Input.PlayerActions.WalkToggle.started -= OnWalkToggleStarted;
         }
 
-        protected void DecelerateHorizontally() // 플레이어 감속 메소드
+        protected void DecelerateHorizontally() // 플레이어 수평 감속 메소드
         {
             Vector3 playerHorizontalVelocity = GetPlayerHorizontalVelocity();
 
             stateMachine.Player.Rigidbody.AddForce(-playerHorizontalVelocity * stateMachine.ReusableData.MovementDecelerationForce, ForceMode.Acceleration);
+        }
+
+        protected void DecelerateVertically() // 플레이어 수직 감속 메소드
+        {
+            Vector3 playerVerticalVelocity = GetPlayerVerticalVelocity();
+
+            stateMachine.Player.Rigidbody.AddForce(-playerVerticalVelocity * stateMachine.ReusableData.MovementDecelerationForce, ForceMode.Acceleration);
         }
 
         protected bool IsMovingHorizontally(float minimumMagnitude = 0.1f) // 플레이어의 수평 움직임 여부 확인 메소드
@@ -226,11 +246,26 @@ namespace GenshinLike
             return playerHorizontalMovement.magnitude > minimumMagnitude;
         }
 
+        protected bool isMovingUp(float minimumVelocity = 0.1f)
+        {
+            return GetPlayerVerticalVelocity().y > minimumVelocity;
+        }
+
+        protected bool isMovingDown(float minimumVelocity = 0.1f)
+        {
+            return GetPlayerVerticalVelocity().y < -minimumVelocity;
+        }
+
         protected void SetBaseRotationData()
         {
             stateMachine.ReusableData.RotationData = movemnetData.BaseRotationData;
 
             stateMachine.ReusableData.TimeToReachTargetRotation = stateMachine.ReusableData.RotationData.TargetRotationReachTime;
+        }
+
+        protected virtual void OnContactWithGround(Collider collider)
+        {
+            
         }
 
         #endregion
