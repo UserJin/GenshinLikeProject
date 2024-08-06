@@ -21,6 +21,11 @@ namespace GenshinLike
         public PlayerHardStoppingState HardStoppingState { get; }
 
         public PlayerJumpingState JumpingState { get; }
+        public PlayerFallingState FallingState { get; }
+
+        public PlayerLightLandingState LightLandingState { get; }
+        public PlayerHardLandingState HardLandingState { get; }
+        public PlayerRollingState RollingState { get; }
 
         public PlayerMovementStateMachine(Player player)
         {
@@ -39,6 +44,11 @@ namespace GenshinLike
             HardStoppingState = new PlayerHardStoppingState(this);
 
             JumpingState = new PlayerJumpingState(this);
+            FallingState = new PlayerFallingState(this);
+
+            LightLandingState = new PlayerLightLandingState(this);
+            HardLandingState = new PlayerHardLandingState(this);
+            RollingState = new PlayerRollingState(this);
         }
     }
 }

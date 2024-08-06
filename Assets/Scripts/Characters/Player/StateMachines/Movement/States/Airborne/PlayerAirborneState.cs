@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace GenshinLike
@@ -22,7 +20,7 @@ namespace GenshinLike
         #region Reusable Methods
         protected override void OnContactWithGround(Collider collider)
         {
-            stateMachine.ChangeState(stateMachine.IdlingState);
+            stateMachine.ChangeState(stateMachine.LightLandingState);
         }
 
         protected virtual void ResetSprintState()

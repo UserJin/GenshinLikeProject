@@ -76,6 +76,16 @@ namespace GenshinLike
                 return;
             }
         }
+
+        public virtual void OnTriggerExit(Collider collider)
+        {
+            if (stateMachine.Player.LayerData.IsGroundLayer(collider.gameObject.layer))
+            {
+                OnContactWithGroundExited(collider);
+
+                return;
+            }
+        }
         #endregion
 
         #region Main Methods(실제 실행되는 메소드)
@@ -213,6 +223,13 @@ namespace GenshinLike
             stateMachine.Player.Rigidbody.velocity = Vector3.zero;
         }
 
+        protected void ResetVerticalVelocity() // 플레이어의 수직 속도를 0으로 초기화
+        {
+            Vector3 playerHorizontalVelocity = GetPlayerHorizontalVelocity();
+
+            stateMachine.Player.Rigidbody.velocity = playerHorizontalVelocity;
+        }
+
         protected virtual void AddInputActionsCallbacks() // 입력에 의한 콜백 메소드를 추가
         {
             stateMachine.Player.Input.PlayerActions.WalkToggle.started += OnWalkToggleStarted;
@@ -268,6 +285,10 @@ namespace GenshinLike
             
         }
 
+        protected virtual void OnContactWithGroundExited(Collider collider)
+        {
+            
+        }
         #endregion
 
         #region Input Methods(입력 관련 메소드)

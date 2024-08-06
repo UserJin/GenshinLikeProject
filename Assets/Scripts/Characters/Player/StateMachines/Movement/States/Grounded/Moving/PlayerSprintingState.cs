@@ -93,6 +93,13 @@ namespace GenshinLike
 
             stateMachine.Player.Input.PlayerActions.Sprint.performed -= OnSprintPerformed;
         }
+
+        protected override void OnFall()
+        {
+            shouldResetSprintState = false;
+
+            base.OnFall();
+        }
         #endregion
 
         #region Input Methods
