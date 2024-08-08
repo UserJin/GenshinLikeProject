@@ -1,8 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.InputSystem;
-
 namespace GenshinLike
 {
     public class PlayerLandingState : PlayerGroundedState
@@ -11,10 +6,14 @@ namespace GenshinLike
         {
         }
 
-        #region
-        protected override void OnMovementCanceled(InputAction.CallbackContext context)
+        #region IState Methods
+        public override void Enter()
         {
+            base.Enter();
+
+            DisableCameraRecentering();
         }
         #endregion
     }
+
 }

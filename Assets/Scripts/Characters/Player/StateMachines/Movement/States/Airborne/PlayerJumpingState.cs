@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace GenshinLike
 {
@@ -83,8 +84,11 @@ namespace GenshinLike
             Vector3 jumpForce = stateMachine.ReusableData.CurrentJumpForce;
 
             Vector3 jumpDirection = stateMachine.Player.transform.forward;
+
             if(shouldKeepRotating)
             {
+                UpdateTargetRotation(GetMovementInputDirection());
+
                 jumpDirection = GetTargetRotationDirection(stateMachine.ReusableData.CurrentTargetRotation.y);
             }
 
@@ -124,6 +128,10 @@ namespace GenshinLike
         }
         #endregion
 
-
+        #region Input Methods
+        protected override void OnMovementCanceled(InputAction.CallbackContext context)
+        {
+        }
+        #endregion
     }
 }

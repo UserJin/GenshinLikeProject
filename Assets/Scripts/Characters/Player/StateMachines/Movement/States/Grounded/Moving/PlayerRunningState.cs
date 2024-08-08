@@ -17,9 +17,10 @@ namespace GenshinLike
         #region IState Methods
         public override void Enter()
         {
+            stateMachine.ReusableData.MovementSpeedModifier = movemnetData.RunData.SpeedModifier;
+
             base.Enter();
 
-            stateMachine.ReusableData.MovementSpeedModifier = movemnetData.RunData.SpeedModifier;
             stateMachine.ReusableData.CurrentJumpForce = airborneData.JumpData.MediumForce;
 
             startTime = Time.time;
@@ -61,6 +62,8 @@ namespace GenshinLike
         protected override void OnMovementCanceled(InputAction.CallbackContext context)
         {
             stateMachine.ChangeState(stateMachine.MediumStoppingState);
+
+            base.OnMovementCanceled(context);
         }
 
         protected override void OnWalkToggleStarted(InputAction.CallbackContext context)

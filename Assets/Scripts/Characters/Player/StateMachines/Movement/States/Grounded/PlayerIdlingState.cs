@@ -7,16 +7,22 @@ namespace GenshinLike
 {
     public class PlayerIdlingState : PlayerGroundedState
     {
+        private PlayerIdleData IdleData;
+
         public PlayerIdlingState(PlayerMovementStateMachine playerMovementStateMachine) : base(playerMovementStateMachine)
         {
+            IdleData = movemnetData.IdleData;
         }
 
         #region IState Methods(스테이트에 종속적인 메소드)
         public override void Enter()
         {
+            stateMachine.ReusableData.MovementSpeedModifier = 0f;
+
+            stateMachine.ReusableData.BackwardsCameraRecenteringData = IdleData.BackwardsCameraRecenteringData;
+
             base.Enter();
 
-            stateMachine.ReusableData.MovementSpeedModifier = 0f;
             stateMachine.ReusableData.CurrentJumpForce = airborneData.JumpData.StationaryForce;
 
             ResetVelocity();
@@ -34,6 +40,17 @@ namespace GenshinLike
             OnMove();
         }
 
+        public override void PhysicsUpdate()
+        {
+            base.PhysicsUpdate();
+
+            if (!IsMovingHorizontally())
+            {
+                return;
+            }
+
+            ResetVelocity();
+        }
         #endregion
     }
 }

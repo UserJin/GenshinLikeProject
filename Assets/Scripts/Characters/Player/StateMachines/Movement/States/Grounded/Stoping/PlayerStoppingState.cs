@@ -11,9 +11,12 @@ namespace GenshinLike
         #region IState Methods
         public override void Enter()
         {
+            stateMachine.ReusableData.MovementSpeedModifier = 0f;
+
+            SetBaseCameraRecenteringData();
+
             base.Enter();
 
-            stateMachine.ReusableData.MovementSpeedModifier = 0f;
         }
 
         public override void PhysicsUpdate()
@@ -53,10 +56,6 @@ namespace GenshinLike
         #endregion
 
         #region Input Methods
-        protected override void OnMovementCanceled(InputAction.CallbackContext context)
-        {
-        }
-
         private void OnMovementStarted(InputAction.CallbackContext context)
         {
             OnMove();

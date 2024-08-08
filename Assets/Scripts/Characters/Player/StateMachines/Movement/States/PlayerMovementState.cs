@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -17,6 +18,7 @@ namespace GenshinLike
 
             movemnetData = stateMachine.Player.Data.GroundedData;
             airborneData = stateMachine.Player.Data.AirborneData;
+            SetBaseCameraRecenteringData();
 
             InitializeData();
         }
@@ -148,14 +150,27 @@ namespace GenshinLike
         #endregion
 
         #region Reusable Methods(재사용 가능 메소드)
+        protected void SetBaseCameraRecenteringData()
+        {
+            stateMachine.ReusableData.BackwardsCameraRecenteringData = movemnetData.BackwardsCameraRecenteringData;
+            stateMachine.ReusableData.SidewaysCameraRecenteringData = movemnetData.SidewaysCameraRecenteringData;
+        }
+
         protected Vector3 GetMovementInputDirection() // 입력한 이동 방향을 가져옴
         {
             return new Vector3(stateMachine.ReusableData.MovementInput.x, 0f, stateMachine.ReusableData.MovementInput.y);
         }
 
-        protected float GetMovementSpeed() // 플레이어의 현재 속력을 가져옴 (속력 배수와 경사면 속력 배수에 의해 결정됨)
+        protected float GetMovementSpeed(bool shouldConsiderSlopes = true) // 플레이어의 현재 속력을 가져옴 (속력 배수와 경사면 속력 배수에 의해 결정됨)
         {
-            return movemnetData.BaseSpeed * stateMachine.ReusableData.MovementSpeedModifier * stateMachine.ReusableData.MovementOnSlopeSpeedModifier;
+            float movementSpeed = movemnetData.BaseSpeed * stateMachine.ReusableData.MovementSpeedModifier;
+
+            if (shouldConsiderSlopes)
+            {
+                movementSpeed *= stateMachine.ReusableData.MovementOnSlopeSpeedModifier;
+            }
+
+            return movementSpeed;
         }
 
         protected Vector3 GetPlayerHorizontalVelocity() // 플레이어의 수평 속도를 가져옴
@@ -233,11 +248,21 @@ namespace GenshinLike
         protected virtual void AddInputActionsCallbacks() // 입력에 의한 콜백 메소드를 추가
         {
             stateMachine.Player.Input.PlayerActions.WalkToggle.started += OnWalkToggleStarted;
+
+            stateMachine.Player.Input.PlayerActions.Look.started += OnMouseMovementStarted;
+
+            stateMachine.Player.Input.PlayerActions.Movement.performed += OnMovementPerformed;
+            stateMachine.Player.Input.PlayerActions.Movement.canceled += OnMovementCanceled;
         }
 
         protected virtual void RemoveInputActionsCallbacks() // 추가한 콜백 메소드를 제거
         {
             stateMachine.Player.Input.PlayerActions.WalkToggle.started -= OnWalkToggleStarted;
+
+            stateMachine.Player.Input.PlayerActions.Look.started -= OnMouseMovementStarted;
+
+            stateMachine.Player.Input.PlayerActions.Movement.performed -= OnMovementPerformed;
+            stateMachine.Player.Input.PlayerActions.Movement.canceled -= OnMovementCanceled;
         }
 
         protected void DecelerateHorizontally() // 플레이어 수평 감속 메소드
@@ -263,32 +288,101 @@ namespace GenshinLike
             return playerHorizontalMovement.magnitude > minimumMagnitude;
         }
 
-        protected bool isMovingUp(float minimumVelocity = 0.1f)
+        protected bool isMovingUp(float minimumVelocity = 0.1f) // 플레이어의 수직 상승 여부 확인 메소드
         {
             return GetPlayerVerticalVelocity().y > minimumVelocity;
         }
 
-        protected bool isMovingDown(float minimumVelocity = 0.1f)
+        protected bool isMovingDown(float minimumVelocity = 0.1f) // 플레이어의 수직 하강 여부 확인 메소드
         {
             return GetPlayerVerticalVelocity().y < -minimumVelocity;
         }
 
-        protected void SetBaseRotationData()
+        protected void SetBaseRotationData() // 회전 데이터 설정 메소드
         {
             stateMachine.ReusableData.RotationData = movemnetData.BaseRotationData;
 
             stateMachine.ReusableData.TimeToReachTargetRotation = stateMachine.ReusableData.RotationData.TargetRotationReachTime;
         }
 
-        protected virtual void OnContactWithGround(Collider collider)
+        protected virtual void OnContactWithGround(Collider collider) // 지면과 충돌하는 경우 작동하는 메소드
         {
-            
         }
 
-        protected virtual void OnContactWithGroundExited(Collider collider)
+        protected virtual void OnContactWithGroundExited(Collider collider) // 지면에서 떨어지는 경우 작동하는 메소드
         {
-            
         }
+
+        protected void UpdateCameraRecenteringState(Vector2 movementInput)
+        {
+            if(movementInput == Vector2.zero)
+            {
+                return;
+            }
+
+            if(movementInput == Vector2.up)
+            {
+                DisableCameraRecentering();
+
+                return;
+            }
+
+            float cameraVerticalAngle = stateMachine.Player.MainCameraTransform.eulerAngles.x;
+
+            // 오일러 각은 항상 양수로 나오므로 음수 회전값을 얻기 위해 추가 작업을 함 (-90 ~ 90)
+            if(cameraVerticalAngle >= 270f)
+            {
+                cameraVerticalAngle -= 360f;
+            }
+
+            cameraVerticalAngle = Mathf.Abs(cameraVerticalAngle);
+
+            if (movementInput == Vector2.down)
+            {
+                SetCameraRecenteringState(cameraVerticalAngle, stateMachine.ReusableData.BackwardsCameraRecenteringData);
+
+                return;
+            }
+
+            SetCameraRecenteringState(cameraVerticalAngle, stateMachine.ReusableData.SidewaysCameraRecenteringData);
+
+        }
+
+        protected void EnableCameraRecentering(float waitTime = -1f, float recenteringTime = -1f) // 카메라의 중심 설정 기능을 활성화하는 메소드
+        {
+            float movementSpeed = GetMovementSpeed();
+
+            if(movementSpeed == 0f)
+            {
+                movementSpeed = movemnetData.BaseSpeed;
+            }
+
+            stateMachine.Player.CameraUtility.EnableRecentering(waitTime, recenteringTime, movemnetData.BaseSpeed, movementSpeed);
+        }
+
+        protected void DisableCameraRecentering() // 카메라의 중심 설정 기능을 비활성화하는 메소드
+        {
+            stateMachine.Player.CameraUtility.DisableRecentering();
+        }
+
+        // 해당 각도를 통해 카메라 중심 설정을 활성화 및 비활성화하는 메소드
+        protected void SetCameraRecenteringState(float cameraVerticalAngle, List<PlayerCameraRecenteringData> cameraRecenteringData)
+        {
+            foreach (PlayerCameraRecenteringData recenteringData in cameraRecenteringData)
+            {
+                if (!recenteringData.IsWithinRange(cameraVerticalAngle))
+                {
+                    continue;
+                }
+
+                EnableCameraRecentering(recenteringData.WaitTime, recenteringData.RecenteringTime);
+
+                return;
+            }
+
+            DisableCameraRecentering();
+        }
+
         #endregion
 
         #region Input Methods(입력 관련 메소드)
@@ -296,6 +390,22 @@ namespace GenshinLike
         {
             stateMachine.ReusableData.ShouldWalk = !stateMachine.ReusableData.ShouldWalk;
         }
+
+        protected virtual void OnMovementCanceled(InputAction.CallbackContext context)
+        {
+            DisableCameraRecentering();
+        }
+
+        private void OnMouseMovementStarted(InputAction.CallbackContext context)
+        {
+            UpdateCameraRecenteringState(stateMachine.ReusableData.MovementInput);
+        }
+
+        protected virtual void OnMovementPerformed(InputAction.CallbackContext context)
+        {
+            UpdateCameraRecenteringState(context.ReadValue<Vector2>());
+        }
+
         #endregion
     }
 }

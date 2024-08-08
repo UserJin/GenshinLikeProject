@@ -18,6 +18,8 @@ namespace GenshinLike
             base.Enter();
 
             UpdateShoulSprintState();
+
+            UpdateCameraRecenteringState(stateMachine.ReusableData.MovementInput);
         }
 
         public override void PhysicsUpdate()
@@ -67,7 +69,12 @@ namespace GenshinLike
         {
             float slopeSpeedModifier = movemnetData.SlopeSpeedAngle.Evaluate(angle);
 
-            stateMachine.ReusableData.MovementOnSlopeSpeedModifier = slopeSpeedModifier;
+            if(stateMachine.ReusableData.MovementOnSlopeSpeedModifier != slopeSpeedModifier)
+            {
+                stateMachine.ReusableData.MovementOnSlopeSpeedModifier = slopeSpeedModifier;
+
+                UpdateCameraRecenteringState(stateMachine.ReusableData.MovementInput);
+            }
 
             return slopeSpeedModifier;
         }
@@ -90,9 +97,10 @@ namespace GenshinLike
         private bool IsThereGroundUnderneath()
         {
             BoxCollider groundCheckCollider = stateMachine.Player.ColliderUtility.TriggerColliderData.GroundCheckCollider;
+
             Vector3 groundColliderCenterInWorldSpace = groundCheckCollider.bounds.center;
 
-            Collider[] overlappedGroundColliders = Physics.OverlapBox(groundColliderCenterInWorldSpace, groundCheckCollider.bounds.extents, groundCheckCollider.transform.rotation, stateMachine.Player.LayerData.GroundLayer, QueryTriggerInteraction.Ignore);
+            Collider[] overlappedGroundColliders = Physics.OverlapBox(groundColliderCenterInWorldSpace, stateMachine.Player.ColliderUtility.TriggerColliderData.GroundCheckColliderExtents, groundCheckCollider.transform.rotation, stateMachine.Player.LayerData.GroundLayer, QueryTriggerInteraction.Ignore);
 
             return overlappedGroundColliders.Length > 0;
         }
@@ -104,8 +112,6 @@ namespace GenshinLike
         {
             base.AddInputActionsCallbacks();
 
-            stateMachine.Player.Input.PlayerActions.Movement.canceled += OnMovementCanceled;
-
             stateMachine.Player.Input.PlayerActions.Dash.started += OnDashStarted;
 
             stateMachine.Player.Input.PlayerActions.Jump.started += OnJumpStarted;
@@ -114,8 +120,6 @@ namespace GenshinLike
         protected override void RemoveInputActionsCallbacks() // 특정 상태에서 나올 때, 입력에 대한 발생하는 메소드 삭제
         {
             base.RemoveInputActionsCallbacks();
-
-            stateMachine.Player.Input.PlayerActions.Movement.canceled -= OnMovementCanceled;
 
             stateMachine.Player.Input.PlayerActions.Dash.started -= OnDashStarted;
 
@@ -169,11 +173,6 @@ namespace GenshinLike
         #endregion
 
         #region Input Methods
-        protected virtual void OnMovementCanceled(InputAction.CallbackContext context) // 이동 입력 종료 시, 대기 상태로 전환
-        {
-            stateMachine.ChangeState(stateMachine.IdlingState);
-        }
-
         protected virtual void OnDashStarted(InputAction.CallbackContext context)
         {
             stateMachine.ChangeState(stateMachine.DashingState);
@@ -184,6 +183,12 @@ namespace GenshinLike
             stateMachine.ChangeState(stateMachine.JumpingState);
         }
 
+        protected override void OnMovementPerformed(InputAction.CallbackContext context)
+        {
+            base.OnMovementPerformed(context);
+
+            UpdateTargetRotation(GetMovementInputDirection());
+        }
         #endregion
     }
 }
