@@ -27,6 +27,8 @@ namespace GenshinLike
 
             base.Enter();
 
+            StartAnimation(stateMachine.Player.AnimationData.DashParameterHash);
+
             stateMachine.ReusableData.CurrentJumpForce = airborneData.JumpData.StrongForce;
 
             stateMachine.ReusableData.RotationData = dashData.RotationData;
@@ -43,6 +45,8 @@ namespace GenshinLike
         public override void Exit()
         {
             base.Exit();
+
+            StopAnimation(stateMachine.Player.AnimationData.DashParameterHash);
 
             SetBaseRotationData();
         }
@@ -137,8 +141,10 @@ namespace GenshinLike
 
         }
 
-        private void OnMovementPerformed(InputAction.CallbackContext context)
+        protected override void OnMovementPerformed(InputAction.CallbackContext context)
         {
+            base.OnMovementPerformed(context);
+
             shoulKeepRotating = true;
         }
         #endregion

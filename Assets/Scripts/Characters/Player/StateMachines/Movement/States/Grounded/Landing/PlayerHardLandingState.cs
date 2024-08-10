@@ -19,6 +19,8 @@ namespace GenshinLike
 
             base.Enter();
 
+            StartAnimation(stateMachine.Player.AnimationData.HardLandParameterHash);
+
             stateMachine.Player.Input.PlayerActions.Movement.Disable();
 
             ResetVelocity();
@@ -27,6 +29,8 @@ namespace GenshinLike
         public override void Exit()
         {
             base.Exit();
+
+            StopAnimation(stateMachine.Player.AnimationData.HardLandParameterHash);
 
             stateMachine.Player.Input.PlayerActions.Movement.Enable();
         }

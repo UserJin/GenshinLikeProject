@@ -28,6 +28,8 @@ namespace GenshinLike
 
             base.Enter();
 
+            StartAnimation(stateMachine.Player.AnimationData.SprintParameterHash);
+
             stateMachine.ReusableData.CurrentJumpForce = airborneData.JumpData.StrongForce;
 
             shouldResetSprintState = true;
@@ -43,6 +45,9 @@ namespace GenshinLike
         public override void Exit()
         {
             base.Exit();
+
+            StopAnimation(stateMachine.Player.AnimationData.SprintParameterHash);
+
             if (shouldResetSprintState)
             {
                 keepSprinting = false;

@@ -150,6 +150,16 @@ namespace GenshinLike
         #endregion
 
         #region Reusable Methods(재사용 가능 메소드)
+        protected void StartAnimation(int animationHash)
+        {
+            stateMachine.Player.Animator.SetBool(animationHash, true);
+        }
+
+        protected void StopAnimation(int animationHash)
+        {
+            stateMachine.Player.Animator.SetBool(animationHash, false);
+        }
+
         protected void SetBaseCameraRecenteringData()
         {
             stateMachine.ReusableData.BackwardsCameraRecenteringData = movemnetData.BackwardsCameraRecenteringData;

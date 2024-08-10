@@ -17,9 +17,18 @@ namespace GenshinLike
         {
             base.Enter();
 
+            StartAnimation(stateMachine.Player.AnimationData.GroundedParameterHash);
+
             UpdateShoulSprintState();
 
             UpdateCameraRecenteringState(stateMachine.ReusableData.MovementInput);
+        }
+
+        public override void Exit()
+        {
+            base.Exit();
+
+            StopAnimation(stateMachine.Player.AnimationData.GroundedParameterHash);
         }
 
         public override void PhysicsUpdate()
