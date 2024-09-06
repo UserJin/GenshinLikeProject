@@ -5,7 +5,7 @@
  * :calendar: 개발 기간: 2024-07-15 ~ 2024-08-10
 <br/><br/>
 
-[![Video Label](http://img.youtube.com/vi/fH1L4OWUQzI/0.jpg)](https://youtu.be/fH1L4OWUQzI)
+[실행 영상 링크(유튜브)](https://youtu.be/fH1L4OWUQzI)
 
 ## 2. :house_with_garden: 개발 환경
  * Unity 2022.3.7f1 LTS
